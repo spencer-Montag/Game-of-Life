@@ -1,0 +1,264 @@
+/***************************************
+ * Project 5
+ * 
+ * Spencer Montag - CIS 200 A
+ *
+ * This program is a game called " the game of life".
+ * in this program a file that is arranged with a pattern
+ * of one and zeros in then goes through iterations of
+ * changing the pattern on that is was given base on the 
+ * rules of the game. 
+ * -------
+ * is a cellular automaton devised by the British mathematician
+ * John Horton Conway in 1970. It is a zero-player game, meaning 
+ * that its evolution is determined by its initial state, requiring 
+ * no further input.
+ * 
+ ***************************************/
+import java.util.*; 
+import java.io.*; 
+
+public class Proj5 {
+    //=======================Main Method======================
+    public static void main(String[] args) throws IOException {
+    
+        Scanner s = new Scanner(System.in); // might not need to use in program
+        String fname = " ";
+        
+        // error checking to make sure a file is given
+        if (args.length > 0){
+            fname = args[0];
+            int [][] pattern = read(fname);
+
+            boolean userVar = true; 
+
+
+          
+                System.out.print(displayboard(pattern));
+                //given code in the project details
+                try {
+                    Thread.sleep(500);
+                }
+                catch (InterruptedException e) {}
+
+                while(userVar = true){
+
+                
+                    pattern = update(pattern, fname); 
+                    System.out.print(displayboard(pattern));
+                    
+                     //given code in the project details
+                    try {
+                            Thread.sleep(500);
+                        }
+                    catch (InterruptedException e) {}
+                }
+            }//end of while 
+        
+        else{
+           System.out.print("Error no file was given");
+        }
+
+       
+
+       // inFile.close(); 
+    
+    
+    
+    }// end Main
+
+
+    /**================Read Method=====================
+    *   This method read in the file stores the file as
+    *  as integers in a 2d array
+    * @fileName (is the file that is read in as a string)
+    * 
+    * @return (Returns a 2d int array called pattern ) */
+
+
+    public static int [][] read(String filename) throws IOException{
+
+        Scanner inFile = new Scanner(new File(filename));
+        //read in the frist two lines of file to find array size
+        int row = Integer.parseInt(inFile.nextLine());
+        int col = Integer.parseInt(inFile.nextLine()); 
+
+        //System.out.println(row + " "+ col); // test to make sure row and col are correct ----- TEST PRINT
+        //creates the array with the correct size of the array
+        int [][] pattern = new int [row][col];
+        
+        //
+        while(inFile.hasNextLine()){
+             for (int i =0; i < pattern.length; i++){
+                // String line = inFile.nextLine();
+                // String [] numbers = inFile.split("");
+
+                // must read nextLine in here and split otherwise got an index error. Split delimator is ever character in the string
+                String [] numbers = inFile.nextLine().split("");
+                for(int k = 0; k < numbers.length; k++){
+                    //stores the split String as a int in the pattern array
+                    pattern[i][k] = Integer.parseInt(numbers[k]); 
+                }
+            }
+      
+        }//end of while
+                    
+        return pattern; 
+    }// end of read method
+
+
+    /**================DisplayBoard Method===================
+    *   This method displays the pattern. Creates a string form 
+    *   the pattern array and Makes dead cells a "." and live cells "*". 
+    *  
+    * @Pattern (is a int 2d array that holds ones and zeros )
+    * 
+    * @return board (Returns a String that is formated correctly and in row/col) */
+
+    public static String displayboard( int [][] pattern){
+
+        StringBuilder s = new StringBuilder();
+        //steps through 2d array 
+        for(int row =0 ; row< pattern.length; row++){
+            for(int col = 0; col<pattern[row].length; col++){
+                //changes 0 and 1 to "." and "*"
+                //uses string builder to build the string
+                if (pattern[row][col] == 0){
+                    s.append(".");
+                }
+                else {
+                    s.append("*"); 
+                }
+            }
+            s.append("\n");
+        }
+        // assigns to varible board which is then returned and printing in the calling of the method.
+        String board = s.toString(); 
+
+        return board;
+
+    }
+
+
+    /**================Update Method=====================
+    *   This method is used to create a new padded 2d array
+    *   so that every spot can be check for each cell. Calls
+    *   on the neighbors method to check cells. 
+    *  
+    * @fileName (is the file that is read in as a string. so i dont have to pass the file row and col around everywhere)
+    * @pattern (passes the 2d array pattern to pad it )
+    * @return (Returns an updated array with the next iteration of cells ) */
+
+    public static int [][] update(int [][]pattern, String filename)throws IOException{
+
+        // read in a size of txt doc array and then fills and creates a buffed array so
+        // that the method neighboors can check the life of cell on the
+        //sides of the array 
+        Scanner inFile = new Scanner(new File(filename));
+        int row = Integer.parseInt(inFile.nextLine());
+        int col = Integer.parseInt(inFile.nextLine());
+        
+        //creates buff array so that it can be padded by added to two to row and col
+        int [][] buffArray = new int [row + 2][col + 2];
+        //creates array that is going to hold the changes of the cells
+        int [][] updateArray = new int[row][col];
+
+        // fills the padded array from the pattern array into the correct spot of the padded array. 
+        for (row = 0; row < pattern.length; row++){
+            for(col = 0; col < pattern[row].length; col++){
+                buffArray[row+1][col+1] = pattern[row][col]; 
+            }
+        }
+
+    
+        System.out.println();
+        //passes padded array and to be updated array
+        neighbors(buffArray, updateArray);
+
+        return updateArray; 
+    }
+
+    /**================Neighbors Method=====================
+    *   This method check each position of the buffed/padded array
+    *   to see if the cell either stays alive/ dead or needs to come
+    *   alive/die. then updateArray is then assigned the spot of the 
+    *   buffArray after it has been checked. 
+    *   
+    *  
+    * @buffArray (the buffed array that is used to check everyspot in the array)
+    * @UpdateArray (used to hold the changes that are made in the buffed array)
+    * @return (Returns the updated array with the correct changes) */
+
+
+    public static int[][] neighbors(int [][]buffArray, int [][] updateArray){
+        
+       //for loop to iterate through the correct spots of the buffed array
+        for(int row = 1; row < buffArray.length -1;row++){
+            for(int col=1 ; col< buffArray[row].length -1;col++){
+                    //counts the amount of live cells around the currect cell being checked
+                    int liveCellCount = 0;
+
+                    //all the checks and the positons they are checking
+                    // 0x0 !
+                    if(buffArray[row-1][col-1]== 1){
+                        liveCellCount++;
+                    }
+                    //0x1 !
+                    if(buffArray[row-1][col]==1){
+                        liveCellCount++;
+                    }
+                    //0x2  !
+                    if(buffArray[row -1][col +1]==1){
+                        liveCellCount++;
+                    }
+                    //1x2  !
+                    if(buffArray[row][col+1]==1){
+                        liveCellCount++;
+                    }
+                    //2x2  !
+                    if(buffArray[row +1][col +1] == 1){
+                        liveCellCount++;
+                    }
+                    //2x1  !
+                    if(buffArray[row +1][col]==1){
+                        liveCellCount++;
+                    }
+                    //2x0  !
+                    if(buffArray[row +1][col -1]==1){
+                        liveCellCount++;
+                    }
+                    //1x0  
+                    if(buffArray[row][col-1]==1){
+                        liveCellCount++;
+                    }
+                   // checks for a live cell
+                   // the rules for what happens to a live cell
+                    if(buffArray[row][col]== 1){
+                        if(liveCellCount < 2){
+                            updateArray[row-1][col-1] = 0; 
+                        }
+                        else if(liveCellCount > 3){
+                            updateArray[row-1][col-1] = 0;
+                        }
+                        else{
+                            updateArray[row-1][col-1] = 1;
+                        }
+
+                    }
+                    //checks for a dead cell
+                    // the rules for what happens to a dead cell
+                    else{
+                        if(liveCellCount == 3){
+                            updateArray[row-1][col-1] = 1;
+                        }
+                        else{
+                            updateArray[row-1][col-1] = 0;
+                        }                      
+                    } 
+            }
+        }
+        
+        return updateArray; 
+    }
+
+}// end of class 
